@@ -29,18 +29,18 @@ uint8_t readUintFromFlash(uint8_t *addrflash)
     char    params[4] = {0}; // max 3 (255) digits NULL terminated
     uint8_t counter   = 0;
     do {
-        params[counter++] = (char)pgm_read_byte_near(addrflash++); // read character from eeprom and locate next buffer and flash location
+        params[counter++] = (char)pgm_read_byte_near(addrflash++);
         if (params[counter - 1] == 0)
             return 0;
-    } while (params[counter - 1] != '.' && counter < sizeof(params)); // reads until limiter '.' and for safety reason not more then size of params[]
-    params[counter - 1] = 0x00;                                       // replace '.' by NULL to terminate the string
+    } while (params[counter - 1] != '.' && counter < sizeof(params));
+    params[counter - 1] = 0x00;
     return atoi(params);
 }
 
 void MFCustomDeviceGetArraySizes(uint8_t numberDevices[])
 {
     uint8_t* addrFlashP = (uint8_t*)CustomDeviceConfig;
-    uint8_t  device    = readUintFromFlash(addrFlashP); // read the first value from Flash, it's a device definition
+    uint8_t  device    = readUintFromFlash(addrFlashP);
     if (device == 0)
         return;
 
