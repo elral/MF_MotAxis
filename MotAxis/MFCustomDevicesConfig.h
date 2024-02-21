@@ -7,7 +7,7 @@
 
 // Otherwise define your input custom devices
 
-const char CustomDeviceConfig[] PROGMEM = 
+const uint8_t CustomDeviceConfig[] PROGMEM = 
 {
     "3.4.TrimEnable:"
     "3.7.ThrottleEnable:"

@@ -24,12 +24,12 @@ bool MFCustomDeviceGetConfig()
 }
 
 // reads an ascii value which is '.' terminated from Flash and returns it's value
-uint8_t readUintFromFlash(uint16_t *addrflash)
+uint8_t readUintFromFlash(uint8_t *addrflash)
 {
     char    params[4] = {0}; // max 3 (255) digits NULL terminated
     uint8_t counter   = 0;
     do {
-        params[counter++] = pgm_read_byte_near(CustomDeviceConfig + (*addrflash)++); // read character from eeprom and locate next buffer and flash location
+        params[counter++] = (char)pgm_read_byte_near(addrflash++); // read character from eeprom and locate next buffer and flash location
         if (params[counter - 1] == 0)
             return 0;
     } while (params[counter - 1] != '.' && counter < sizeof(params)); // reads until limiter '.' and for safety reason not more then size of params[]
@@ -39,19 +39,18 @@ uint8_t readUintFromFlash(uint16_t *addrflash)
 
 void MFCustomDeviceGetArraySizes(uint8_t numberDevices[])
 {
-    uint16_t addrFlash = 0;
-    
-    uint8_t  device    = readUintFromFlash(&addrFlash); // read the first value from Flash, it's a device definition
+    uint8_t* addrFlashP = (uint8_t*)CustomDeviceConfig;
+    uint8_t  device    = readUintFromFlash(addrFlashP); // read the first value from Flash, it's a device definition
     if (device == 0)
         return;
 
     do {
         numberDevices[device]++;
-        while (pgm_read_byte_near(CustomDeviceConfig + addrFlash) != ':' && addrFlash < sizeof(CustomDeviceConfig)) {
-            addrFlash++;
+        while (pgm_read_byte_near(addrFlashP) != ':') {
+            addrFlashP++;
         }
-        device = readUintFromFlash(&(++addrFlash));
-    } while (device && addrFlash < sizeof(CustomDeviceConfig));
+        device = readUintFromFlash(++addrFlashP);
+    } while (device);
 }
 
 /* **********************************************************************************
