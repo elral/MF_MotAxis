@@ -20,7 +20,7 @@
       "FirmwareBaseName": "elral_motaxis_raspberrypico",
       "FirmwareExtension": "uf2",
       "FriendlyName": "Mobiflight MotAxis",
-      "LatestFirmwareVersion": "0.0.1",
+      "LatestFirmwareVersion": "0.0.9",
       "MobiFlightType": "Mobiflight Template RaspiPico",
       "ResetFirmwareFile": "reset.raspberry_pico_flash_nuke.uf2",
       "CustomDeviceTypes": [

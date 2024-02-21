@@ -33,7 +33,7 @@
     "DelayAfterFirmwareUpdate": 0,
     "FirmwareBaseName": "elral_motaxis_nano",
     "FirmwareExtension": "hex",
-    "LatestFirmwareVersion": "2.5.1",
+    "LatestFirmwareVersion": "0.0.9",
     "FriendlyName": "Mobiflight MotAxis",
     "MobiFlightType": "Mobiflight_MotAxis",
     "ResetFirmwareFile": "reset.arduino_uno_1_0_2.hex",

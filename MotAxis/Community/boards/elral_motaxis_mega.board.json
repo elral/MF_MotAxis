@@ -37,7 +37,7 @@
       "DelayAfterFirmwareUpdate": 0,
       "FirmwareBaseName": "elral_motaxis_mega",
       "FirmwareExtension": "hex",
-      "LatestFirmwareVersion": "0.0.1",
+      "LatestFirmwareVersion": "0.0.9",
       "FriendlyName": "Mobiflight MotAxis",
       "MobiFlightType": "Mobiflight_MotAxis",
       "ResetFirmwareFile": "reset.arduino_mega_1_0_2.hex",
