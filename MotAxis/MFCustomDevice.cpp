@@ -101,7 +101,7 @@ void MFCustomDevice::attach(uint16_t adrPin, uint16_t adrType, uint16_t adrConfi
         is used to store the type
     ********************************************************************************** */
     getStringFromEEPROM(adrType, parameter);
-    if (strcmp(parameter, "Mobiflight_MotAxis") == 0)
+    if (strcmp(parameter, "MOBIFLIGHT_MOTAXIS") == 0)
         _customType = MY_MOTAXIS;
 
     if (_customType == MY_MOTAXIS) {
