@@ -2,7 +2,23 @@
 #include "commandmessenger.h"
 #include "allocateMem.h"
 #include "MFEEPROM.h"
+#include "MFCustomDevicesConfig.h"
+
 extern MFEEPROM MFeeprom;
+
+/* **********************************************************************************
+    This function is called after startup to inform the connector
+    about custom input devices.
+    Send back your input devices which are required for ALL Custom Decices
+    The devices are defined in MFCustomDevicesConfig.h
+********************************************************************************** */
+void MFCustomDeviceGetConfig()
+{
+    cmdMessenger.sendCmdArg((char)pgm_read_byte_near(CustomDeviceConfig));
+    for (uint16_t i = 1; i < sizeof(CustomDeviceConfig) - 1; i++) {
+        cmdMessenger.sendArg((char)pgm_read_byte_near(CustomDeviceConfig + i));
+    }
+}
 
 /* **********************************************************************************
     The custom device pins, type and configuration is stored in the EEPROM
@@ -21,6 +37,17 @@ extern MFEEPROM MFeeprom;
     The maximum characters to be expected is 18, so MEMLEN_STRING_BUFFER has to be at least 18
 ********************************************************************************** */
 #define MEMLEN_STRING_BUFFER 40
+
+// ************************************************************
+// Simulate a button press if manual move is detected
+// ************************************************************
+void handlerOnCustomDevice(uint8_t eventId, const char *name)
+{
+    cmdMessenger.sendCmdStart(kButtonChange);
+    cmdMessenger.sendCmdArg(name);
+    cmdMessenger.sendCmdArg(eventId);
+    cmdMessenger.sendCmdEnd();
+}
 
 // reads a string from EEPROM at given address which is '.' terminated and saves it to the buffer
 bool MFCustomDevice::getStringFromEEPROM(uint16_t addreeprom, char *buffer)
@@ -60,9 +87,10 @@ void MFCustomDevice::attach(uint16_t adrPin, uint16_t adrType, uint16_t adrConfi
         Do something which is required to setup your custom device
     ********************************************************************************** */
 
-    char   *params, *p = NULL;
-    char    parameter[MEMLEN_STRING_BUFFER];
-    uint8_t _pin1, _pin2, _pin3;
+    char    *syncName, *params, *p = NULL;
+    char     parameter[MEMLEN_STRING_BUFFER];
+    uint8_t  analogIn, enablePin, enableStatus, startPosition, stepperNumber;
+    uint16_t movingTime, maxSteps;
 
     /* **********************************************************************************
         Read the Type from the EEPROM, copy it into a buffer and evaluate it
@@ -91,17 +119,23 @@ void MFCustomDevice::attach(uint16_t adrPin, uint16_t adrType, uint16_t adrConfi
             Split the pins up into single pins. As the number of pins could be different between
             multiple devices, it is done here.
         ********************************************************************************************** */
-        params = strtok_r(parameter, "|", &p);
-        _pin1  = atoi(params);
-        params = strtok_r(NULL, "|", &p);
-        _pin2  = atoi(params);
-        params = strtok_r(NULL, "|", &p);
-        _pin3  = atoi(params);
+        /* The stepper is defined in the connector, no pins required for this device                   */
 
         /* **********************************************************************************
             Read the configuration from the EEPROM, copy it into a buffer.
+            stored in the eeprom like:
+            "0|SyncLostTrim|4|0|0|50|4000|900|600|800"
+            "AnalogInNumber|NameButton|enablePin|enableStatus|startPosition|movingTime|maxSteps|maxSpeed|maxAccel"
+            AnalogInNumber      x.th device for AnalogIn configured in the connector
+            NameButton          name of the Button which reports a sync loss, must be the same as configured in the connector
+            enablePin           pin number of output which dis/enbles the stepper driver
+            enableStatus        0 or 1 for enabling the stepper driver
+            stepperNumber       x.th device for Stepper configured in the connector
+            startPosition       on start up the axis will go to this position, in 0% ... 100%
+            movingTime          measure the time for a complete stroke and define here, required for calculating sync loss
+            maxSteps            maximum steps for a complete stroke, required for calculating sync loss
         ********************************************************************************** */
-        getStringFromEEPROM(adrConfig, parameter);
+        // getStringFromEEPROM(adrConfig, parameter);    As long as no config string from the connector is available, define it here.
         /* **********************************************************************************
             Split the config up into single parameter. As the number of parameters could be
             different between multiple devices, it is done here.
@@ -110,12 +144,30 @@ void MFCustomDevice::attach(uint16_t adrPin, uint16_t adrType, uint16_t adrConfi
             For most customer devices it is not required.
             In this case just delete the following
         ********************************************************************************** */
-        uint16_t Parameter1;
-        char    *Parameter2;
-        params     = strtok_r(parameter, "|", &p);
-        Parameter1 = atoi(params);
+        char configTrim[] = "0|SyncLostTrim|4|0|0|50|4000|900";
+        params            = strtok_r(configTrim, "|", &p); // change configTrim back to parameter once the config string from the connector is available
+        analogIn          = atoi(params);
+
+        params   = strtok_r(NULL, "|", &p);
+        syncName = params;
+
+        params    = strtok_r(NULL, "|", &p);
+        enablePin = atoi(params);
+
+        params       = strtok_r(NULL, "|", &p);
+        enableStatus = atoi(params);
+
+        params        = strtok_r(NULL, "|", &p);
+        stepperNumber = atoi(params);
+
+        params        = strtok_r(NULL, "|", &p);
+        startPosition = atoi(params);
+
         params     = strtok_r(NULL, "|", &p);
-        Parameter2 = params;
+        movingTime = atoi(params);
+
+        params   = strtok_r(NULL, "|", &p);
+        maxSteps = atoi(params);
 
         /* **********************************************************************************
             Next call the constructor of your custom device
@@ -124,10 +176,9 @@ void MFCustomDevice::attach(uint16_t adrPin, uint16_t adrType, uint16_t adrConfi
         // In most cases you need only one of the following functions
         // depending on if the constuctor takes the variables or a separate function is required
         _myMotAxis = new (allocateMemory(sizeof(MotAxis))) MotAxis();
-        _myMotAxis->attach(Parameter1, Parameter2);
-        // if your custom device does not need a separate begin() function, delete the following
-        // or this function could be called from the custom constructor or attach() function
-        _myMotAxis->begin(_pin1, _pin2);
+        _myMotAxis->attach(analogIn, syncName, stepperNumber, startPosition, movingTime, maxSteps, enablePin, enableStatus);
+        _myMotAxis->attachHandler(handlerOnCustomDevice);
+        _myMotAxis->begin();
         _initialized = true;
     } else {
         cmdMessenger.sendCmd(kStatus, F("Custom Device is not supported by this firmware version"));

@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include "MotAxis.h"
 
+void MFCustomDeviceGetConfig();
+
 // only one entry required if you have only one custom device
 enum {
     MY_MOTAXIS = 1

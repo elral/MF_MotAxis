@@ -1,10 +1,10 @@
 {
     "$schema": "./mfdevice.schema.json",
     "Info": {
-      "Label": "Mobiflight's template",
-      "Type": "MOBIFLIGHT_TEMPLATE",
-      "Author": "Mobiflight",
-      "URL": "https://github.com",
+      "Label": "Mobiflight MotorizedAxis",
+      "Type": "MOBIFLIGHT_MOTAXIS",
+      "Author": "elral",
+      "URL": "https://github.com/elral/MF_MotAxis",
       "Version" : "1.0.0"
     },
     "Config": {
@@ -18,18 +18,8 @@
     "MessageTypes": [
       {
         "id": 0,
-        "label": "Show Speed Value",
-        "description": "$ will be displayed as Speed value"
-      },
-      {
-        "id": 1,
-        "label": "Show Heading Value",
-        "description": "$ will be displayed as Heading value"
-      },
-      {
-        "id": 2,
-        "label": "Show AP On/Off",
-        "description": "0 = True, 1 = False"
+        "label": "Set axis",
+        "description": "$ set the axis position, range is -1000 ... 0 ... +1000"
       }
     ]
   }
