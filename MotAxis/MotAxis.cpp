@@ -15,6 +15,22 @@ MotAxis::MotAxis()
     _initialized = false;
 }
 
+void MotAxis::attach(uint8_t analogIn, const char *syncName, uint8_t stepper, uint8_t startPosition,
+                     uint16_t movingTime, uint16_t maxSteps, uint8_t enablePin, uint8_t enableStatus)
+{
+    _initialized  = true;
+    _setPoint     = map(startPosition, 0, 100, -512, 511); // define start position, comes in 0...100%, must be -512...511
+    _synchronized = true;                                  // on startup we will move to start position
+    _lastSync     = 0;                                     // for calculation of out of sync, this is time dependent
+    _analogIn     = analogIn;                              // where to get the actual value from
+    _syncName     = syncName;                              // button name on which out of sync is reported
+    _stepper      = stepper;                               // which stepper has to be moved
+    _movingTime   = movingTime;                            // time for complete stroke in 1ms (0s to 25.5s)
+    _maxSteps     = maxSteps;                              // number of steps for the complete stroke
+    _enablePin    = enablePin;                             // output to en-/dis-able the stepper
+    _enableStatus = enableStatus;                          // HIGH or LOW to enable the stepper
+}
+
 // this must be called after reading the config as it can not be ensured that all device are initialized when the constructor is called
 void MotAxis::begin()
 {
@@ -36,22 +52,6 @@ void MotAxis::begin()
         }
     } while (abs(_deltaSteps) > 5);           // on startup center Axis
     digitalWrite(_enablePin, !_enableStatus); // disable stepper on startup
-}
-
-void MotAxis::attach(uint8_t analogIn, const char *syncName, uint8_t stepper, uint8_t startPosition,
-                     uint16_t movingTime, uint16_t maxSteps, uint8_t enablePin, uint8_t enableStatus)
-{
-    _initialized  = true;
-    _setPoint     = map(startPosition, 0, 100, -512, 511); // define start position, comes in 0...100%, must be -512...511
-    _synchronized = true;                                  // on startup we will move to start position
-    _lastSync     = 0;                                     // for calculation of out of sync, this is time dependent
-    _analogIn     = analogIn;                              // where to get the actual value from
-    _syncName     = syncName;                              // button name on which out of sync is reported
-    _stepper      = stepper;                               // which stepper has to be moved
-    _movingTime   = movingTime;                            // time for complete stroke in 1ms (0s to 25.5s)
-    _maxSteps     = maxSteps;                              // number of steps for the complete stroke
-    _enablePin    = enablePin;                             // output to en-/dis-able the stepper
-    _enableStatus = enableStatus;                          // HIGH or LOW to enable the stepper
 }
 
 void MotAxis::detach()
