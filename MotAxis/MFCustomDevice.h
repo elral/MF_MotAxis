@@ -4,6 +4,7 @@
 #include "MotAxis.h"
 
 bool MFCustomDeviceGetConfig();
+void MFCustomDeviceGetArraySizes(uint8_t numberDevices[]);
 
 // only one entry required if you have only one custom device
 enum {

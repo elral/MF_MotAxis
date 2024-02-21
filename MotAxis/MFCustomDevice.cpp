@@ -23,6 +23,37 @@ bool MFCustomDeviceGetConfig()
     return true;
 }
 
+// reads an ascii value which is '.' terminated from Flash and returns it's value
+uint8_t readUintFromFlash(uint16_t *addrflash)
+{
+    char    params[4] = {0}; // max 3 (255) digits NULL terminated
+    uint8_t counter   = 0;
+    do {
+        params[counter++] = pgm_read_byte_near(CustomDeviceConfig + (*addrflash)++); // read character from eeprom and locate next buffer and flash location
+        if (params[counter - 1] == 0)
+            return 0;
+    } while (params[counter - 1] != '.' && counter < sizeof(params)); // reads until limiter '.' and for safety reason not more then size of params[]
+    params[counter - 1] = 0x00;                                       // replace '.' by NULL to terminate the string
+    return atoi(params);
+}
+
+void MFCustomDeviceGetArraySizes(uint8_t numberDevices[])
+{
+    uint16_t addrFlash = 0;
+    
+    uint8_t  device    = readUintFromFlash(&addrFlash); // read the first value from Flash, it's a device definition
+    if (device == 0)
+        return;
+
+    do {
+        numberDevices[device]++;
+        while (pgm_read_byte_near(CustomDeviceConfig + addrFlash) != ':' && addrFlash < sizeof(CustomDeviceConfig)) {
+            addrFlash++;
+        }
+        device = readUintFromFlash(&(++addrFlash));
+    } while (device && addrFlash < sizeof(CustomDeviceConfig));
+}
+
 /* **********************************************************************************
     The custom device pins, type and configuration is stored in the EEPROM
     While loading the config the adresses in the EEPROM are transferred to the constructor
