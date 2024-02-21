@@ -2,11 +2,11 @@
 
 #include "Arduino.h"
 
-class MyCustomClass
+class MotAxis
 {
 public:
-    MyCustomClass(uint8_t Pin1, uint8_t Pin2);
-    void begin();
+    MotAxis();
+    void begin(uint8_t Pin1, uint8_t Pin2);
     void attach(uint16_t Pin3, char *init);
     void detach();
     void set(int16_t messageID, char *setPoint);
