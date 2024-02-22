@@ -11,11 +11,10 @@ extern MFEEPROM MFeeprom;
     Send back your array for input devices which are required for ALL Custom Decices
     The devices are defined in MFCustomDevicesConfig.h
 ********************************************************************************** */
-uint8_t* MFCustomDeviceGetConfig()
+uint8_t *MFCustomDeviceGetConfig()
 {
-    return (uint8_t*)CustomDeviceConfig;
+    return (uint8_t *)CustomDeviceConfig;
 }
-
 
 /* **********************************************************************************
     The custom device pins, type and configuration is stored in the EEPROM
@@ -207,9 +206,7 @@ void MFCustomDevice::detach()
 void MFCustomDevice::update()
 {
     if (!_initialized) return;
-    /* **********************************************************************************
-        Do something if required
-    ********************************************************************************** */
+
     if (_customType == MY_MOTAXIS) {
         _myMotAxis->update();
     }

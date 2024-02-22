@@ -23,12 +23,12 @@ void MotAxis::attach(uint8_t analogIn, const char *syncName, uint8_t stepper, ui
     _synchronized = true;                                  // on startup we will move to start position
     _lastSync     = 0;                                     // for calculation of out of sync, this is time dependent
     _analogIn     = analogIn;                              // where to get the actual value from
-    _syncName     = syncName;                              // button name on which out of sync is reported
     _stepper      = stepper;                               // which stepper has to be moved
     _movingTime   = movingTime;                            // time for complete stroke in 1ms (0s to 25.5s)
     _maxSteps     = maxSteps;                              // number of steps for the complete stroke
     _enablePin    = enablePin;                             // output to en-/dis-able the stepper
     _enableStatus = enableStatus;                          // HIGH or LOW to enable the stepper
+    strncpy(_syncName, syncName, 19);                      // button name on which out of sync is reported
 }
 
 // this must be called after reading the config as it can not be ensured that all device are initialized when the constructor is called
@@ -135,6 +135,9 @@ void MotAxis::update()
 
 void MotAxis::setSetpoint(int16_t newPosition)
 {
+    if (!_initialized)
+        return;
+
     // range is -500 ... 500
     // from UI setpoint must be in +/-0.1% so -1000 ... 1000
     if (newPosition < -1000)
@@ -153,6 +156,9 @@ int16_t MotAxis::getSetpoint()
 
 void MotAxis::setPowerSave(bool state)
 {
+    if (!_initialized)
+        return;
+
     if (state)
         digitalWrite(_enablePin, !_enableStatus); // disable stepper for moving to center position
     else

@@ -34,7 +34,7 @@ private:
     static CustomEvent _handler;
     int16_t            _setPoint;
     uint8_t            _analogIn;
-    const char        *_syncName;
+    char               _syncName[20] = {0};
     uint8_t            _stepper;
     int16_t            _actualValue;
     int16_t            _deltaSteps;
