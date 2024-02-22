@@ -2,56 +2,20 @@
 #include "commandmessenger.h"
 #include "allocateMem.h"
 #include "MFEEPROM.h"
-#include "MFCustomDevicesConfig.h"
 
 extern MFEEPROM MFeeprom;
 
 /* **********************************************************************************
     This function is called after startup to inform the connector
     about custom input devices.
-    Send back your input devices which are required for ALL Custom Decices
+    Send back your array for input devices which are required for ALL Custom Decices
     The devices are defined in MFCustomDevicesConfig.h
 ********************************************************************************** */
-bool MFCustomDeviceGetConfig()
+uint8_t* MFCustomDeviceGetConfig()
 {
-    if (sizeof(CustomDeviceConfig) == 1)
-        return false;
-    cmdMessenger.sendCmdArg((char)pgm_read_byte_near(CustomDeviceConfig));
-    for (uint16_t i = 1; i < sizeof(CustomDeviceConfig) - 1; i++) {
-        cmdMessenger.sendArg((char)pgm_read_byte_near(CustomDeviceConfig + i));
-    }
-    return true;
+    return (uint8_t*)CustomDeviceConfig;
 }
 
-// reads an ascii value which is '.' terminated from Flash and returns it's value
-uint8_t readUintFromFlash(uint8_t *addrflash)
-{
-    char    params[4] = {0}; // max 3 (255) digits NULL terminated
-    uint8_t counter   = 0;
-    do {
-        params[counter++] = (char)pgm_read_byte_near(addrflash++);
-        if (params[counter - 1] == 0)
-            return 0;
-    } while (params[counter - 1] != '.' && counter < sizeof(params));
-    params[counter - 1] = 0x00;
-    return atoi(params);
-}
-
-void MFCustomDeviceGetArraySizes(uint8_t numberDevices[])
-{
-    uint8_t* addrFlashP = (uint8_t*)CustomDeviceConfig;
-    uint8_t  device    = readUintFromFlash(addrFlashP);
-    if (device == 0)
-        return;
-
-    do {
-        numberDevices[device]++;
-        while (pgm_read_byte_near(addrFlashP) != ':') {
-            addrFlashP++;
-        }
-        device = readUintFromFlash(++addrFlashP);
-    } while (device);
-}
 
 /* **********************************************************************************
     The custom device pins, type and configuration is stored in the EEPROM

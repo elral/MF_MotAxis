@@ -2,9 +2,9 @@
 
 #include <Arduino.h>
 #include "MotAxis.h"
+#include "MFCustomDevicesConfig.h"
 
-bool MFCustomDeviceGetConfig();
-void MFCustomDeviceGetArraySizes(uint8_t numberDevices[]);
+uint8_t* MFCustomDeviceGetConfig();
 
 // only one entry required if you have only one custom device
 enum {
