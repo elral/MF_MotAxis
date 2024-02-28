@@ -38,11 +38,11 @@
       "FirmwareBaseName": "elral_motaxis_mega",
       "FirmwareExtension": "hex",
       "LatestFirmwareVersion": "0.0.9",
-      "FriendlyName": "Mobiflight MotAxis",
-      "MobiFlightType": "Mobiflight_MotAxis",
+      "FriendlyName": "Elral MotAxis Mega",
+      "MobiFlightType": "Elral_MotAxis",
       "ResetFirmwareFile": "reset.arduino_mega_1_0_2.hex",
       "CustomDeviceTypes": [
-        "MOBIFLIGHT_MOTAXIS"
+        "ELRAL_MOTAXIS"
       ],
       "Community": {
         "Project": "Motorized Axis",

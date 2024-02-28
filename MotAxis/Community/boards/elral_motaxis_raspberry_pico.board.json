@@ -19,12 +19,12 @@
       "CanResetBoard": true,
       "FirmwareBaseName": "elral_motaxis_raspberrypico",
       "FirmwareExtension": "uf2",
-      "FriendlyName": "Mobiflight MotAxis",
+      "FriendlyName": "Elral MotAxis Pico",
       "LatestFirmwareVersion": "0.0.9",
-      "MobiFlightType": "Mobiflight Template RaspiPico",
+      "MobiFlightType": "Elral_MotAxis",
       "ResetFirmwareFile": "reset.raspberry_pico_flash_nuke.uf2",
       "CustomDeviceTypes": [
-        "MOBIFLIGHT_MOTAXIS"
+        "ELRAL_MOTAXIS"
       ],
       "Community": {
         "Project": "Your Project",

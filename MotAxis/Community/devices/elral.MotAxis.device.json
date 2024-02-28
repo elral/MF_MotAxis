@@ -2,7 +2,7 @@
     "$schema": "./mfdevice.schema.json",
     "Info": {
       "Label": "Mobiflight MotorizedAxis",
-      "Type": "MOBIFLIGHT_MOTAXIS",
+      "Type": "ELRAL_MOTAXIS",
       "Author": "elral",
       "URL": "https://github.com/elral/MF_MotAxis",
       "Version" : "1.0.0"
