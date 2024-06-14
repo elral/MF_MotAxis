@@ -2,19 +2,13 @@
 #include "commandmessenger.h"
 #include "allocateMem.h"
 #include "MFEEPROM.h"
+#ifdef HAS_CONFIG_IN_FLASH
+#include "MFCustomDevicesConfig.h"
+#else
+const char CustomDeviceConfig[] PROGMEM = {};
+#endif
 
 extern MFEEPROM MFeeprom;
-
-/* **********************************************************************************
-    This function is called after startup to inform the connector
-    about custom input devices.
-    Send back your array for input devices which are required for ALL Custom Decices
-    The devices are defined in MFCustomDevicesConfig.h
-********************************************************************************** */
-uint8_t *MFCustomDeviceGetConfig()
-{
-    return (uint8_t *)CustomDeviceConfig;
-}
 
 /* **********************************************************************************
     The custom device pins, type and configuration is stored in the EEPROM
@@ -45,18 +39,27 @@ void handlerOnCustomDevice(uint8_t eventId, const char *name)
     cmdMessenger.sendCmdEnd();
 }
 
-// reads a string from EEPROM at given address which is '.' terminated and saves it to the buffer
-bool MFCustomDevice::getStringFromEEPROM(uint16_t addreeprom, char *buffer)
+// reads a string from EEPROM or Flash at given address which is '.' terminated and saves it to the buffer
+bool MFCustomDevice::getStringFromMem(uint16_t addrMem, char *buffer, bool configFromFlash)
 {
-    char    temp    = 0;
-    uint8_t counter = 0;
+    char     temp     = 0;
+    uint8_t  counter  = 0;
+    uint16_t length   = MFeeprom.get_length();
     do {
-        temp              = MFeeprom.read_byte((addreeprom)++); // read the first character
-        buffer[counter++] = temp;                               // save character and locate next buffer position
-        if (counter >= MEMLEN_STRING_BUFFER) {                  // nameBuffer will be exceeded
-            return false;                                       // abort copying to buffer
+        if (configFromFlash) {
+            temp = pgm_read_byte_near(CustomDeviceConfig + addrMem++);
+            if (addrMem > sizeof(CustomDeviceConfig))
+                return false;
+        } else {
+            temp = MFeeprom.read_byte(addrMem++);
+            if (addrMem > length)
+                return false;
         }
-    } while (temp != '.');      // reads until limiter '.' and locates the next free buffer position
+        buffer[counter++] = temp;              // save character and locate next buffer position
+        if (counter >= MEMLEN_STRING_BUFFER) { // nameBuffer will be exceeded
+            return false;                      // abort copying to buffer
+        }
+    } while (temp != '.'); // reads until limiter '.' and locates the next free buffer position
     buffer[counter - 1] = 0x00; // replace '.' by NULL, terminates the string
     return true;
 }
@@ -75,7 +78,7 @@ MFCustomDevice::MFCustomDevice()
     will be called
 ********************************************************************************** */
 
-void MFCustomDevice::attach(uint16_t adrPin, uint16_t adrType, uint16_t adrConfig)
+void MFCustomDevice::attach(uint16_t adrPin, uint16_t adrType, uint16_t adrConfig, bool configFromFlash)
 {
     if (adrPin == 0) return;
 
@@ -93,7 +96,7 @@ void MFCustomDevice::attach(uint16_t adrPin, uint16_t adrType, uint16_t adrConfi
         The string get's NOT stored as this would need a lot of RAM, instead a variable
         is used to store the type
     ********************************************************************************** */
-    getStringFromEEPROM(adrType, parameter);
+    getStringFromMem(adrType, parameter, configFromFlash);
     if (strcmp(parameter, "MOBIFLIGHT_MOTAXIS") == 0)
         _customType = MY_MOTAXIS;
 
@@ -110,7 +113,7 @@ void MFCustomDevice::attach(uint16_t adrPin, uint16_t adrType, uint16_t adrConfi
             Read the pins from the EEPROM, copy them into a buffer
             If you have set '"isI2C": true' in the device.json file, the first value is the I2C address
         ********************************************************************************************** */
-        getStringFromEEPROM(adrPin, parameter);
+        getStringFromMem(adrPin, parameter, configFromFlash);
         /* **********************************************************************************************
             Split the pins up into single pins. As the number of pins could be different between
             multiple devices, it is done here.
