@@ -8,7 +8,8 @@ uint8_t* MFCustomDeviceGetConfig();
 
 // only one entry required if you have only one custom device
 enum {
-    MY_MOTAXIS = 1
+    MY_MOTAXIS_TRIM = 1,
+    MY_MOTAXIS_TQ
 };
 class MFCustomDevice
 {

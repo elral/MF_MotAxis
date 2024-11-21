@@ -24,7 +24,8 @@
       "MobiFlightType": "Elral_MotAxis",
       "ResetFirmwareFile": "reset.raspberry_pico_flash_nuke.uf2",
       "CustomDeviceTypes": [
-        "ELRAL_MOTAXIS"
+        "ELRAL_MOTAXIS_TRIMWHEEL",
+        "ELRAL_MOTAXIS_TQ"
       ],
       "Community": {
         "Project": "Your Project",

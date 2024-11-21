@@ -42,7 +42,8 @@
       "MobiFlightType": "Elral_MotAxis",
       "ResetFirmwareFile": "reset.arduino_mega_1_0_2.hex",
       "CustomDeviceTypes": [
-        "ELRAL_MOTAXIS"
+        "ELRAL_MOTAXIS_TRIMWHEEL",
+        "ELRAL_MOTAXIS_TQ"
       ],
       "Community": {
         "Project": "Motorized Axis",

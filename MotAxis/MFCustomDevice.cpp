@@ -97,10 +97,12 @@ void MFCustomDevice::attach(uint16_t adrPin, uint16_t adrType, uint16_t adrConfi
         is used to store the type
     ********************************************************************************** */
     getStringFromMem(adrType, parameter, configFromFlash);
-    if (strcmp(parameter, "MOBIFLIGHT_MOTAXIS") == 0)
-        _customType = MY_MOTAXIS;
+    if (strcmp(parameter, "ELRAL_MOTAXIS_TRIMWHEEL") == 0)
+        _customType = MY_MOTAXIS_TRIM;
+    if (strcmp(parameter, "ELRAL_MOTAXIS_TQ") == 0)
+        _customType = MY_MOTAXIS_TQ;
 
-    if (_customType == MY_MOTAXIS) {
+    if (_customType == MY_MOTAXIS_TRIM) {
         /* **********************************************************************************
             Check if the device fits into the device buffer
         ********************************************************************************** */
@@ -179,6 +181,85 @@ void MFCustomDevice::attach(uint16_t adrPin, uint16_t adrType, uint16_t adrConfi
         _myMotAxis->attachHandler(handlerOnCustomDevice);
         _myMotAxis->begin();
         _initialized = true;
+    } else if (_customType == MY_MOTAXIS_TQ) {
+        /* **********************************************************************************
+            Check if the device fits into the device buffer
+        ********************************************************************************** */
+        if (!FitInMemory(sizeof(MotAxis))) {
+            // Error Message to Connector
+            cmdMessenger.sendCmd(kStatus, F("Custom Device does not fit in Memory"));
+            return;
+        }
+        /* **********************************************************************************************
+            Read the pins from the EEPROM, copy them into a buffer
+            If you have set '"isI2C": true' in the device.json file, the first value is the I2C address
+        ********************************************************************************************** */
+        getStringFromMem(adrPin, parameter, configFromFlash);
+        /* **********************************************************************************************
+            Split the pins up into single pins. As the number of pins could be different between
+            multiple devices, it is done here.
+        ********************************************************************************************** */
+        /* The stepper is defined in the connector, no pins required for this device                   */
+
+        /* **********************************************************************************
+            Read the configuration from the EEPROM, copy it into a buffer.
+            stored in the eeprom like:
+            "0|SyncLostTrim|4|0|0|50|4000|900|600|800"
+            "AnalogInNumber|NameButton|enablePin|enableStatus|startPosition|movingTime|maxSteps|maxSpeed|maxAccel"
+            AnalogInNumber      x.th device for AnalogIn configured in the connector
+            NameButton          name of the Button which reports a sync loss, must be the same as configured in the connector
+            enablePin           pin number of output which dis/enbles the stepper driver
+            enableStatus        0 or 1 for enabling the stepper driver
+            stepperNumber       x.th device for Stepper configured in the connector
+            startPosition       on start up the axis will go to this position, in 0% ... 100%
+            movingTime          measure the time for a complete stroke and define here, required for calculating sync loss
+            maxSteps            maximum steps for a complete stroke, required for calculating sync loss
+        ********************************************************************************** */
+        // getStringFromEEPROM(adrConfig, parameter);    As long as no config string from the connector is available, define it here.
+        /* **********************************************************************************
+            Split the config up into single parameter. As the number of parameters could be
+            different between multiple devices, it is done here.
+            This is just an example how to process the init string. Do NOT use
+            "," or ";" as delimiter for multiple parameters but e.g. "|"
+            For most customer devices it is not required.
+            In this case just delete the following
+        ********************************************************************************** */
+        char configTrim[] = "0|SyncLostTQ|4|0|0|50|4000|900";
+        params            = strtok_r(configTrim, "|", &p); // change configTrim back to parameter once the config string from the connector is available
+        analogIn          = atoi(params);
+
+        params   = strtok_r(NULL, "|", &p);
+        syncName = params;
+
+        params    = strtok_r(NULL, "|", &p);
+        enablePin = atoi(params);
+
+        params       = strtok_r(NULL, "|", &p);
+        enableStatus = atoi(params);
+
+        params        = strtok_r(NULL, "|", &p);
+        stepperNumber = atoi(params);
+
+        params        = strtok_r(NULL, "|", &p);
+        startPosition = atoi(params);
+
+        params     = strtok_r(NULL, "|", &p);
+        movingTime = atoi(params);
+
+        params   = strtok_r(NULL, "|", &p);
+        maxSteps = atoi(params);
+
+        /* **********************************************************************************
+            Next call the constructor of your custom device
+            adapt it to the needs of your constructor
+        ********************************************************************************** */
+        // In most cases you need only one of the following functions
+        // depending on if the constuctor takes the variables or a separate function is required
+        _myMotAxis = new (allocateMemory(sizeof(MotAxis))) MotAxis();
+        _myMotAxis->attach(analogIn, syncName, stepperNumber, startPosition, movingTime, maxSteps, enablePin, enableStatus);
+        _myMotAxis->attachHandler(handlerOnCustomDevice);
+        _myMotAxis->begin();
+        _initialized = true;
     } else {
         cmdMessenger.sendCmd(kStatus, F("Custom Device is not supported by this firmware version"));
     }
@@ -192,7 +273,7 @@ void MFCustomDevice::attach(uint16_t adrPin, uint16_t adrType, uint16_t adrConfi
 void MFCustomDevice::detach()
 {
     _initialized = false;
-    if (_customType == MY_MOTAXIS) {
+    if (_customType == MY_MOTAXIS_TRIM) {
         _myMotAxis->detach();
     }
 }
@@ -210,7 +291,7 @@ void MFCustomDevice::update()
 {
     if (!_initialized) return;
 
-    if (_customType == MY_MOTAXIS) {
+    if (_customType == MY_MOTAXIS_TRIM) {
         _myMotAxis->update();
     }
 }
@@ -224,7 +305,7 @@ void MFCustomDevice::set(int16_t messageID, char *setPoint)
 {
     if (!_initialized) return;
 
-    if (_customType == MY_MOTAXIS) {
+    if (_customType == MY_MOTAXIS_TRIM) {
         _myMotAxis->set(messageID, setPoint);
     }
 }

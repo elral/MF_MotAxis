@@ -1,0 +1,23 @@
+{
+    "$schema": "./mfdevice.schema.json",
+    "Info": {
+      "Label": "Mobiflight MotorizedAxis",
+      "Type": "ELRAL_MOTAXIS_TQ",
+      "Author": "elral",
+      "URL": "https://github.com/elral/MF_MotAxis",
+      "Version" : "1.0.0"
+    },
+    "Config": {
+      "Pins": [
+      ],
+      "isI2C": false
+    },
+    "MessageTypes": [
+      {
+        "id": 0,
+        "label": "Set axis",
+        "description": "$ set the axis position, range is -1000 ... 0 ... +1000"
+      }
+    ]
+  }
+  
